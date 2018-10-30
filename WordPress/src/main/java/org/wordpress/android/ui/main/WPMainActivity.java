@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -97,7 +98,10 @@ import org.wordpress.android.util.WPActivityUtils;
 import org.wordpress.android.util.analytics.service.InstallationReferrerServiceStarter;
 import org.wordpress.android.widgets.WPDialogSnackbar;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -473,11 +477,18 @@ public class WPMainActivity extends AppCompatActivity implements
         EventBus.getDefault().unregister(this);
         mDispatcher.unregister(this);
         super.onDestroy();
+        Debug.stopMethodTracing();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        SimpleDateFormat date =
+                new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
+        String logDate = date.format(new Date());
+// Applies the date and time to the name of the trace log.
+        Debug.startMethodTracing(
+                "wptrace-" + logDate);
 
         // Load selected site
         initSelectedSite();

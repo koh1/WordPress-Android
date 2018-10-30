@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -167,9 +168,11 @@ import org.wordpress.aztec.util.AztecLog;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -576,6 +579,7 @@ public class EditPostActivity extends AppCompatActivity implements
         }
     }
 
+
     private Runnable mSave = new Runnable() {
         @Override
         public void run() {
@@ -598,7 +602,12 @@ public class EditPostActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-
+        SimpleDateFormat date =
+                new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
+        String logDate = date.format(new Date());
+// Applies the date and time to the name of the trace log.
+        Debug.startMethodTracing(
+                "wptrace-" + logDate);
         EventBus.getDefault().register(this);
 
         reattachUploadingMedia();
@@ -643,12 +652,13 @@ public class EditPostActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-
+        Debug.stopMethodTracing();
         EventBus.getDefault().unregister(this);
     }
 
     @Override protected void onStop() {
         super.onStop();
+        Debug.stopMethodTracing();
         if (mAztecImageLoader != null && isFinishing()) {
             mAztecImageLoader.clearTargets();
             mAztecImageLoader = null;
@@ -668,7 +678,9 @@ public class EditPostActivity extends AppCompatActivity implements
         if (mEditorFragment instanceof AztecEditorFragment) {
             ((AztecEditorFragment) mEditorFragment).disableContentLogOnCrashes();
         }
+        Debug.stopMethodTracing();
         super.onDestroy();
+
     }
 
     private void removePostOpenInEditorStickyEvent() {
